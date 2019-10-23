@@ -21,9 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define SCREENLOCKER_GREETERAPP_H
 
 #include <QGuiApplication>
-
 #include <KPackage/PackageStructure>
-#include <QQmlComponent>
+#include <QUrl>
 
 namespace KWayland {
 namespace Client {
@@ -43,7 +42,6 @@ struct org_kde_ksld;
 
 namespace ScreenLocker
 {
-class Unlocker;
 class WallpaperIntegration;
 class LnFIntegration;
 

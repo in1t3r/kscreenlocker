@@ -48,8 +48,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <QTimer>
 #include <QProcess>
 #include <QX11Info>
-#include <QDBusReply>
-#include <QGuiApplication>
 // X11
 #include <X11/Xlib.h>
 #include <xcb/xcb.h>
@@ -236,7 +234,7 @@ void KSldApp::initialize()
             }
         }
     );
-    connect(m_lockProcess, static_cast<void (QProcess::*)(QProcess::ProcessError)>(&QProcess::error), this,
+    connect(m_lockProcess, &QProcess::errorOccurred, this,
         [this](QProcess::ProcessError error) {
             if (error == QProcess::FailedToStart) {
                 doUnlock();
@@ -358,7 +356,7 @@ void KSldApp::configure()
     }
 }
 
-void KSldApp::lock(EstablishLock establishLock)
+void KSldApp::lock(EstablishLock establishLock, int attemptCount)
 {
     if (lockState() != Unlocked) {
         // already locked or acquiring lock, no need to lock again
@@ -371,9 +369,20 @@ void KSldApp::lock(EstablishLock establishLock)
         return;
     }
 
+    if (attemptCount == 0) {
+        emit aboutToLock();
+    }
+
     qDebug() << "lock called";
     if (!establishGrab()) {
-        qCritical() << "Could not establish screen lock";
+        if (attemptCount < 3) {
+            qWarning() << "Could not establish screen lock. Trying again in 10ms";
+            QTimer::singleShot(10, this, [=]() {
+                lock(establishLock, attemptCount+1);
+            });
+        } else {
+            qCritical() << "Could not establish screen lock";
+        }
         return;
     }
 
@@ -557,7 +566,7 @@ void KSldApp::startLockProcess(EstablishLock establishLock)
         int sx[2];
         if (socketpair(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0, sx) < 0) {
             qWarning() << "Can not create socket";
-            emit m_lockProcess->error(QProcess::FailedToStart);
+            emit m_lockProcess->errorOccurred(QProcess::FailedToStart);
             return;
         }
         m_greeterClientConnection = m_waylandDisplay->createClient(sx[0]);
@@ -599,7 +608,7 @@ void KSldApp::startLockProcess(EstablishLock establishLock)
     // start the Wayland server
     int fd = m_waylandServer->start();
     if (fd == -1) {
-        emit m_lockProcess->error(QProcess::FailedToStart);
+        emit m_lockProcess->errorOccurred(QProcess::FailedToStart);
         return;
     }
 

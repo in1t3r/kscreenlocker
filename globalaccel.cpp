@@ -51,7 +51,7 @@ static const QMap<QString, QRegularExpression> s_shortcutWhitelist{
         QStringLiteral("mute|decrease_volume|increase_volume")
     )},
     {QStringLiteral("/component/org_kde_powerdevil"), QRegularExpression(
-        QStringLiteral("Increase Screen Brightness|Decrease Screen Brightness|Increase Keyboard Brightness|Decrease Keyboard Brightness")
+        QStringLiteral("Increase Screen Brightness|Decrease Screen Brightness|Increase Keyboard Brightness|Decrease Keyboard Brightness|Turn Off Screen")
     )},
     {QStringLiteral("/component/KDE_Keyboard_Layout_Switcher"), QRegularExpression(
         QStringLiteral("Switch to Next Keyboard Layout|Switch keyboard layout to .*")
@@ -254,9 +254,10 @@ bool GlobalAccel::checkKeyPress(xcb_key_press_event_t *event)
     }
 
     int keyCodeQt;
-    int keyModQt;
-    KKeyServer::symXToKeyQt(keySymX, &keyCodeQt);
-    KKeyServer::modXToQt(keyModX, &keyModQt);
+    KKeyServer::symXModXToKeyQt(keySymX, keyModX, &keyCodeQt);
+    // Split keycode and modifier
+    int keyModQt = keyCodeQt & Qt::KeyboardModifierMask;
+    keyCodeQt &= ~Qt::KeyboardModifierMask;
 
     if (keyModQt & Qt::SHIFT && !KKeyServer::isShiftAsModifierAllowed(keyCodeQt)) {
         keyModQt &= ~Qt::SHIFT;

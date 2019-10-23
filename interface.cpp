@@ -29,7 +29,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <KRandom>
 // Qt
 #include <QDBusConnection>
-#include <QDBusInterface>
 #include <QDBusReply>
 #include <QDBusServiceWatcher>
 
@@ -51,6 +50,7 @@ Interface::Interface(KSldApp *parent)
     QDBusConnection::sessionBus().registerObject(QStringLiteral("/org/freedesktop/ScreenSaver"), this);
     connect(m_daemon, &KSldApp::locked, this, &Interface::slotLocked);
     connect(m_daemon, &KSldApp::unlocked, this, &Interface::slotUnlocked);
+    connect(m_daemon, &KSldApp::aboutToLock, this, &Interface::AboutToLock);
 
     m_serviceWatcher->setConnection(QDBusConnection::sessionBus());
     m_serviceWatcher->setWatchMode(QDBusServiceWatcher::WatchForUnregistration);
@@ -203,7 +203,7 @@ void Interface::configure()
 
 void Interface::sendLockReplies()
 {
-    foreach (const QDBusMessage &reply, m_lockReplies) {
+    for (const QDBusMessage &reply : qAsConst(m_lockReplies)) {
         QDBusConnection::sessionBus().send(reply);
     }
 

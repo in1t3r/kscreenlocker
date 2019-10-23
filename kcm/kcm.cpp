@@ -29,16 +29,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <KGlobalAccel>
 #include <KCModule>
 #include <KPluginFactory>
-#include <KConfigDialogManager>
 #include <QVBoxLayout>
 #include <QMessageBox>
-#include <QStandardItemModel>
 
 #include <KPackage/Package>
 #include <KPackage/PackageLoader>
 
-#include <QQuickItem>
 #include <QQmlContext>
+#include <QQuickItem>
 
 static const QString s_lockActionName = QStringLiteral("Lock Session");
 static const QString s_defaultWallpaperPackage = QStringLiteral("org.kde.image");
@@ -55,9 +53,9 @@ ScreenLockerKcmForm::ScreenLockerKcmForm(QWidget *parent)
 {
     setupUi(this);
     layout()->setContentsMargins(0, 0, 0, 0);
-    kcfg_Timeout->setSuffix(ki18ncp("Spinbox suffix. Short for minutes"," min"," mins"));
+    kcfg_Timeout->setSuffix(ki18ncp("Spinbox suffix"," minute"," minutes"));
 
-    kcfg_LockGrace->setSuffix(ki18ncp("Spinbox suffix. Short for seconds"," sec"," secs"));
+    kcfg_LockGrace->setSuffix(ki18ncp("Spinbox suffix"," second"," seconds"));
 }
 
 
